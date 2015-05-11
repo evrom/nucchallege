@@ -11,10 +11,13 @@ sensor = YVoltage.FirstVoltage()
 m = sensor.get_module()
 target = m.get_serialNumber()
 voltageSensor = YVoltage.FindVoltage(target + '.voltage1')
-print(voltageSensor.get_currentValue())
 
 sensor = YCurrent.FirstCurrent()
 m = sensor.get_module()
 target = m.get_serialNumber()
 currentSensor = YCurrent.FindCurrent(m.get_serialNumber() + '.current1')
-print(currentSensor.get_currentValue())
+
+
+if __name__ == "__main__":
+    print(currentSensor.get_currentValue())
+    print(voltageSensor.get_currentValue())

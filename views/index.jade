@@ -1,0 +1,101 @@
+doctype html(lang='en')
+head
+    meta(charset='utf-8')    
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    // The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags
+    meta(name='description', content='')
+    |     
+    meta(name='author', content='')
+    |     
+    link(rel='icon', href='../../favicon.ico')
+    |     
+    title unCloud Control Panel
+    // Bootstrap core CSS
+    link(href='/static/bootstrap.min.css', rel='stylesheet')
+    script(src='/static/angular.min.js')
+  |   
+body(ng-app="uncloud")
+  .container
+    table.table.table-hover(ng-controller="batteryCtrl")
+      tr
+        td
+          h4 Charge
+        td
+          h4 {{ percent }} &#37;
+      tr
+        td
+          h4 Time Remaining
+        td
+          h4 {{ remaining }}
+      tr
+        td
+          h4 Current
+        td
+          h4 {{ current }} mAmperes
+      tr
+        td
+          h4 Voltage
+        td
+          h4 {{ voltage }} Volts
+    hr
+    table.table(ng-controller="cpuCtrl")
+      tr
+      - var n = 0
+        while n < 4
+          th= "Logical Core " + ((n++) + 1)
+      tr
+        td(ng-repeat="frequency in frequencies track by $index")
+          {{ frequency }} MHz
+      tr
+        td(ng-repeat="usage in usages track by $index")
+          {{ usage }} &#37;
+    hr
+    form(name="speedForm", ng-controller="speedFormCtrl", ng-submit="submit()")
+      select(form="clockspeed", ng-model="speed")
+        option(value="high") High Performance
+        option(value="low") Low Power
+      br
+      input(type="submit", id="submit", value="Submit")
+  script
+    :coffee
+      format_remaining = (seconds) ->
+        hours = Math.floor(seconds / 3600)
+        minutes = Math.floor((seconds % 3600) / 60)
+        formatted = hours + ' Hour(s), ' + minutes + ' Minute(s)' 
+        return formatted
+      uncloud = angular.module('uncloud', [])
+      uncloud.controller 'batteryCtrl', ($scope, $http) ->
+        $scope.getData = ->
+          $http.get('/api/battery').success (response) ->
+            $scope.percent = response.percent
+            $scope.remaining = format_remaining(response.remaining)
+            $scope.current = response.current
+            $scope.voltage = response.voltage
+            return
+          return
+        $scope.getData()
+        setInterval $scope.getData, 1200
+        return
+      uncloud.controller 'cpuCtrl', ($scope, $http) ->
+        $scope.getData = ->
+          $http.get('/api/cpu').success (response) ->
+            $scope.frequencies = response.frequencies
+            $scope.usages = response.usages
+            return
+          return
+        $scope.getData()
+        setInterval $scope.getData, 1200
+        return
+      uncloud.controller 'speedFormCtrl', ($scope, $http) ->
+        $scope.submit = ->
+          $http.post('/api/clockspeed', speed: $scope.speed).success((data, status, headers, config) ->
+            # this callback will be called asynchronously
+            # when the response is available
+            return
+          ).error (data, status, headers, config) ->
+            # called asynchronously if an error occurs
+            # or server returns response with an error status.
+            return
+          return
+        return
